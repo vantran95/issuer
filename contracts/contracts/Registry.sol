@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.8.6;
+pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./ERC1888/IERC1888.sol";
@@ -42,7 +42,39 @@ contract Registry is ERC1155, ERC1888 {
 		emit IssuanceSingle(_msgSender(), _topic, id, _value);
 	}
 
+	/// @notice See {IERC1888-batchIssue}.
+    /// @dev `_to` cannot be the zero address.
+    /// @dev `_data`, `_values` and `_validityData` must have the same length.
+	function batchIssue(address _to, bytes[] calldata _validityData, uint256[] calldata _topics, uint256[] calldata _values, bytes[] calldata _data) external override returns (uint256[] memory ids) {
+		require(_to != address(0x0), "_to must be non-zero.");
+		require(_data.length == _values.length, "Arrays not same length");
+		require(_values.length == _validityData.length, "Arrays not same length");
+
+		ids = new uint256[](_values.length);
+
+		address operator = _msgSender();
+
+		for (uint256 i = 0; i <= _values.length; i++) {
+			ids[i] = i + _latestCertificateId + 1;
+			_validate(operator, _validityData[i]);
+		}
+			
+		ERC1155._mintBatch(_to, ids, _values, new bytes(0)); // Check **
+
+		for (uint256 i = 0; i < ids.length; i++) {
+			certificateStorage[ids[i]] = Certificate({
+				topic: _topics[i],
+				issuer: operator,
+				validityData: _validityData[i],
+				data: _data[i]
+			});
+		}
+
+		emit IssuanceBatch(operator, _topics, ids, _values);
+	}
+
 	/// @notice Allows the issuer to mint more fungible tokens for existing ERC-188 certificates.
+    /// @dev Allows batch issuing to an array of _to addresses.
     /// @dev `_to` cannot be the zero address.
 	function mint(uint256 _id, address _to, uint256 _quantity) external {
 		require(_to != address(0x0), "_to must be non-zero.");
@@ -84,9 +116,64 @@ contract Registry is ERC1155, ERC1888 {
 		emit ClaimSingle(_from, _to, cert.topic, _id, _value, _claimData); //_claimSubject address ??
 	}
 
+	/// @notice See {IERC1888-safeBatchTransferAndClaimFrom}.
+    /// @dev `_to` and `_from` cannot be the zero addresses.
+    /// @dev `_from` has to have a balance above 0.
+	function safeBatchTransferAndClaimFrom(
+		address _from,
+		address _to,
+		uint256[] calldata _ids,
+		uint256[] calldata _values,
+		bytes calldata _data,
+		bytes[] calldata _claimData
+	) external override {
+
+        require(_to != address(0x0), "_to address must be non-zero");
+		require(_from != address(0x0), "_from address must be non-zero");
+
+        require(_ids.length == _values.length, "Arrays not same length");
+		require(_values.length == _claimData.length, "Arrays not same length.");
+        require(_from == _msgSender() || ERC1155.isApprovedForAll(_from, _msgSender()), "No operator approval");
+
+		require(_ids.length > 0, "no certificates specified");
+
+		uint256 numberOfClaims = _ids.length;
+
+		uint256[] memory topics = new uint256[](numberOfClaims);
+
+		for (uint256 i = 0; i < numberOfClaims; i++) {
+			Certificate memory cert = certificateStorage[_ids[i]];
+			_validate(cert.issuer,  cert.validityData);
+			topics[i] = cert.topic;
+		}
+
+		if (_from != _to) {
+			safeBatchTransferFrom(_from, _to, _ids, _values, _data);
+		}
+
+		for (uint256 i = 0; i < numberOfClaims; i++) {
+			_burn(_to, _ids[i], _values[i]);
+		}
+
+		emit ClaimBatch(_from, _to, topics, _ids, _values, _claimData);
+	}
+
 	/// @notice See {IERC1888-claimedBalanceOf}.
 	function claimedBalanceOf(address _owner, uint256 _id) external override view returns (uint256) {
 		return claimedBalances[_id][_owner];
+	}
+
+	/// @notice See {IERC1888-claimedBalanceOfBatch}.
+	function claimedBalanceOfBatch(address[] calldata _owners, uint256[] calldata _ids) external override view returns (uint256[] memory) {
+        require(_owners.length == _ids.length, "owners and ids length mismatch");
+
+        uint256[] memory batchClaimBalances = new uint256[](_owners.length);
+
+        for (uint256 i = 0; i < _owners.length; i++) {
+            batchClaimBalances[i] = this.claimedBalanceOf(_owners[i], _ids[i]);
+        }
+
+        return batchClaimBalances;
 	}
 
 	/// @notice See {IERC1888-getCertificate}.

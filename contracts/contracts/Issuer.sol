@@ -1,12 +1,11 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <0.9.0;
-/// @title Voting with delegation.
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import "./Registry.sol";
+import "./RegistryExtended.sol";
 
 /// @title Issuer contract
 /// @notice Used to manage the request/approve workflow for issuing ERC-1888 certificates.
@@ -16,7 +15,7 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     uint256 public certificateTopic;
 
     // ERC-1888 contract to issue certificates to
-    Registry public registry;
+    RegistryExtended public registry;
 
     // Optional: Private Issuance contract
     address public privateIssuer;
@@ -42,13 +41,15 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     event CertificationRequested(address indexed _owner, uint256 indexed _id);
+    event CertificationRequestedBatch(address indexed operator, address[] _owners, uint256[] _id);
     event CertificationRequestApproved(address indexed _owner, uint256 indexed _id, uint256 indexed _certificateId);
+    event CertificationRequestBatchApproved(address indexed operator, address[] _owners, uint256[] _ids, uint256[] _certificateIds);
     event CertificationRequestRevoked(address indexed _owner, uint256 indexed _id);
 
     event CertificateRevoked(uint256 indexed _certificateId);
     event CertificateVolumeMinted(address indexed _owner, uint256 indexed _certificateId, uint256 indexed _volume);
 
-    /// @notice Contructor.
+	/// @notice Contructor.
     /// @dev Uses the OpenZeppelin `initializer` for upgradeability.
     /// @dev `_registry` cannot be the zero address.
     function initialize(uint256 _certificateTopic, address _registry) public initializer {
@@ -56,12 +57,12 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
         certificateTopic = _certificateTopic;
 
-        registry = Registry(_registry);
+        registry = RegistryExtended(_registry);
         OwnableUpgradeable.__Ownable_init();
         UUPSUpgradeable.__UUPSUpgradeable_init();
     }
 
-    /// @notice Attaches a private issuance contract to this issuance contract.
+	/// @notice Attaches a private issuance contract to this issuance contract.
     /// @dev `_privateIssuer` cannot be the zero address.
     function setPrivateIssuer(address _privateIssuer) public onlyOwner {
         require(_privateIssuer != address(0), "Cannot use address 0x0");
@@ -70,9 +71,9 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         privateIssuer = _privateIssuer;
     }
 
-    /*
-        Certification requests
-    */
+	/*
+		Certification requests
+	*/
 
     function getCertificationRequest(uint256 _requestId) public view returns (CertificationRequest memory) {
         return _certificationRequests[_requestId];
@@ -84,11 +85,11 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         uint256 id = ++_latestCertificationRequestId;
 
         _certificationRequests[id] = CertificationRequest({
-        owner: _owner,
-        data: _data,
-        approved: false,
-        revoked: false,
-        sender: _msgSender()
+            owner: _owner,
+            data: _data,
+            approved: false,
+            revoked: false,
+            sender: _msgSender()
         });
 
         emit CertificationRequested(_owner, id);
@@ -96,12 +97,36 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         return id;
     }
 
-    function requestCertification(bytes calldata _data) external returns (uint256) {
-        return requestCertificationFor(_data, _msgSender());
+    function requestCertificationForBatch(bytes[] memory _data, address[] memory _owners) public returns (uint256[] memory) {
+        uint256[] memory requestIds = new uint256[](_data.length);
+
+        for (uint256 i = 0; i < _data.length; i++) {
+            require(_owners[i] != address(0), "Owner cannot be 0x0");
+        }
+
+        for (uint256 i = 0; i < _data.length; i++) {
+            uint256 id = i + _latestCertificationRequestId + 1;
+
+            _certificationRequests[id] = CertificationRequest({
+                owner: _owners[i],
+                data: _data[i],
+                approved: false,
+                revoked: false,
+                sender: _msgSender()
+            });
+
+            requestIds[i] = id;
+        }
+
+        emit CertificationRequestedBatch(_msgSender(), _owners, requestIds);
+
+        _latestCertificationRequestId = requestIds[requestIds.length - 1];
+
+        return requestIds;
     }
 
-    function tryGetCertId(uint256 _requestId) public view returns (uint256) {
-        return _requestToCertificate[_requestId];
+    function requestCertification(bytes calldata _data) external returns (uint256) {
+        return requestCertificationFor(_data, _msgSender());
     }
 
     function revokeRequest(uint256 _requestId) external {
@@ -148,6 +173,49 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         return certificateId;
     }
 
+    function approveCertificationRequestBatch(
+        uint256[] memory _requestIds,
+        uint256[] memory _values
+    ) public returns (uint256[] memory) {
+        require(_msgSender() == owner() || _msgSender() == privateIssuer, "caller not owner or issuer");
+        require(_requestIds.length == _values.length, "Arrays not same length");
+
+		for (uint256 i = 0; i < _requestIds.length; i++) {
+            require(_requestNotApprovedOrRevoked(_requestIds[i]), "already approved or revoked");
+		}
+
+        address[] memory owners = new address[](_requestIds.length);
+        bytes[] memory data = new bytes[](_requestIds.length);
+        bytes[] memory validityData = new bytes[](_requestIds.length);
+        uint256[] memory topics = new uint256[](_requestIds.length);
+
+        for (uint256 i = 0; i < _requestIds.length; i++) {
+            CertificationRequest storage request = _certificationRequests[_requestIds[i]];
+            request.approved = true;
+
+            owners[i] = request.owner;
+            data[i] = request.data;
+            validityData[i] = abi.encodeWithSignature("isRequestValid(uint256)",_requestIds[i]);
+            topics[i] = certificateTopic;
+        }
+
+        uint256[] memory certificateIds = registry.batchIssueMultiple(
+            owners,
+            validityData,
+            topics,
+            _values,
+            data
+        );
+
+        for (uint256 i = 0; i < _requestIds.length; i++) {
+            _requestToCertificate[_requestIds[i]] = certificateIds[i];
+        }
+
+        emit CertificationRequestBatchApproved(_msgSender(), owners, _requestIds, certificateIds);
+
+        return certificateIds;
+    }
+
     /// @notice Directly issue a certificate without going through the request/approve procedure manually.
     function issue(address _to, uint256 _value, bytes memory _data) public onlyOwner returns (uint256) {
         uint256 requestId = requestCertificationFor(_data, _to);
@@ -158,15 +226,28 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         );
     }
 
-    /// @notice Mint more volume to existing certificates
+    /// @notice Directly issue a batch of certificates without going through the request/approve procedure manually.
+    function issueBatch(address[] memory _to, uint256[] memory _values, bytes[] memory _data) public onlyOwner returns (uint256[] memory) {
+        require(_to.length == _values.length, "Arrays not same length");
+        require(_values.length == _data.length, "Arrays not same length");
+    
+        uint256[] memory requestIds = requestCertificationForBatch(_data, _to);
+
+        return approveCertificationRequestBatch(
+            requestIds,
+            _values
+        );
+    }
+
+	/// @notice Mint more volume to existing certificates
     /// @param _to To whom the volume should be minted.
-    /// @param _certificateId The ID of the certificate.
-    /// @param _volume Volume that should be minted.
-    function mint(address _to, uint256 _certificateId, uint256 _volume) external onlyOwner {
+	/// @param _certificateId The ID of the certificate.
+	/// @param _volume Volume that should be minted.
+	function mint(address _to, uint256 _certificateId, uint256 _volume) external onlyOwner {
         registry.mint(_certificateId, _to, _volume);
 
         emit CertificateVolumeMinted(_to, _certificateId, _volume);
-    }
+	}
 
     /// @notice Validation for certification requests.
     /// @dev Used by other contracts to validate the token.
@@ -178,13 +259,13 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         uint256 certificateId = _requestToCertificate[_requestId];
 
         return request.approved
-        && !request.revoked
-        && !_revokedCertificates[certificateId];
+            && !request.revoked
+            && !_revokedCertificates[certificateId];
     }
 
-    /*
-        Info
-    */
+	/*
+		Info
+	*/
 
     function getRegistryAddress() external view returns (address) {
         return address(registry);
@@ -198,19 +279,19 @@ contract Issuer is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         return "v0.1";
     }
 
-    /*
-        Private methods
-    */
+	/*
+		Private methods
+	*/
 
     function _requestNotApprovedOrRevoked(uint256 _requestId) internal view returns (bool) {
         CertificationRequest memory request = _certificationRequests[_requestId];
 
         return !request.approved && !request.revoked;
     }
-
+    
     /// @notice Needed for OpenZeppelin contract upgradeability.
     /// @dev Allow only to the owner of the contract.
-    function _authorizeUpgrade(address) internal override onlyOwner {
+	function _authorizeUpgrade(address) internal override onlyOwner {
         // Allow only owner to authorize a smart contract upgrade
     }
 }

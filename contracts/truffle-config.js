@@ -36,9 +36,9 @@ module.exports = {
 
   networks: {
     volta: {
-      networkCheckTimeout: 10000,
+      // networkCheckTimeout: 10000,
       provider: function() {
-        return new HDWalletProvider("0x15da6a59c2654da9382d2920f66466729050c023c7a1ef6265ba8781585191d6", "https://volta-rpc.energyweb.org");
+        return new HDWalletProvider("0x4145997b0b7cc89e3104ecb7bd5d4f68bcf38f5e1acf46d2c4eac7f13dbe4aa0", "https://volta-rpc.energyweb.org");
       },
       network_id: 73799,
       // gas: 5000000,           // Gas sent with each transaction (default: ~6700000)
@@ -93,15 +93,15 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.6",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.4",    // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
-      // settings: {          // See the solidity docs for advice about optimization and evmVersion
-      //  optimizer: {
-      //    enabled: false,
-      //    runs: 200
-      //  },
-      //  evmVersion: "byzantium"
-      // }
+      settings: {          // See the solidity docs for advice about optimization and evmVersion
+       optimizer: {
+         enabled: true,
+         runs: 200
+       },
+       evmVersion: "byzantium"
+      }
     }
   },
 

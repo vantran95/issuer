@@ -1,0 +1,360 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x22F8D7E899740CC8E16cAEb573bBe7B475e7C16E",
+    "txHash": "0xfba9115c2f90f1eccc6c4e35879bc20c4a7efdea59154f3860753c40d1bceb76"
+  },
+  "proxies": [
+    {
+      "address": "0x13556453623dACC0410F2C18814cbFA0Ff8b01A0",
+      "txHash": "0x571150583eb7c063cf008979e0c0160de60831e89bc2fc224af2af79ac879b66",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xB37A5fa71E1f7AaB3d5B95DC52DB2D29401165c1",
+      "txHash": "0x46c118d7ebe545aa9e55b4439e97c79b893f89c524e32efc99101abd257f8072",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5D8832e5829482D5BaAF8e479eBA8CA25F6b3C71",
+      "txHash": "0x7e3ee9cf20d9e1aaa4d393f79f7047f68d997193d4d56b554a7048462529726f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xD2d225896cFf007B0Fa92dc35d3d61351Dd019A3",
+      "txHash": "0x7bafec56e314e10c3981f4defe108e4c0b2d8ed328f5008edc6e5e6386cbc580",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xBc1444093F97B3D3126AcE6dBC1b068685b642e9",
+      "txHash": "0x03a7364c6e93304f65af56787514eb2ed3509ff168752d43b537df3046b242b4",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x123B994152666Ac56f70e0aE4D66717aD26Db53D",
+      "txHash": "0xd30a2d15370108051d1943273d1db81ec47d29b4555de489d37aa45d517a93ca",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "53247cf0c3f009aed2ba54ea0fc4b3e122945e138bd22428982a80b653c9a7d1": {
+      "address": "0x92218f951dFa608bD88607042fa6C760dd2d5213",
+      "txHash": "0x64bf440997619ca2a61773b06f3de0056477a0b3fd1d47ea0d7c28fa8b3a14d7",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:26"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "ERC1967UpgradeUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:214"
+          },
+          {
+            "contract": "UUPSUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:80"
+          },
+          {
+            "contract": "Issuer",
+            "label": "certificateTopic",
+            "type": "t_uint256",
+            "src": "../project:/contracts/Issuer.sol:15"
+          },
+          {
+            "contract": "Issuer",
+            "label": "registry",
+            "type": "t_contract(RegistryExtended)6049",
+            "src": "../project:/contracts/Issuer.sol:18"
+          },
+          {
+            "contract": "Issuer",
+            "label": "privateIssuer",
+            "type": "t_address",
+            "src": "../project:/contracts/Issuer.sol:21"
+          },
+          {
+            "contract": "Issuer",
+            "label": "_certificationRequests",
+            "type": "t_mapping(t_uint256,t_struct(CertificationRequest)2870_storage)",
+            "src": "../project:/contracts/Issuer.sol:24"
+          },
+          {
+            "contract": "Issuer",
+            "label": "_requestToCertificate",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "../project:/contracts/Issuer.sol:27"
+          },
+          {
+            "contract": "Issuer",
+            "label": "_latestCertificationRequestId",
+            "type": "t_uint256",
+            "src": "../project:/contracts/Issuer.sol:30"
+          },
+          {
+            "contract": "Issuer",
+            "label": "_revokedCertificates",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "../project:/contracts/Issuer.sol:33"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_contract(RegistryExtended)6049": {
+            "label": "contract RegistryExtended"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_struct(CertificationRequest)2870_storage)": {
+            "label": "mapping(uint256 => struct Issuer.CertificationRequest)"
+          },
+          "t_struct(CertificationRequest)2870_storage": {
+            "label": "struct Issuer.CertificationRequest",
+            "members": [
+              {
+                "label": "owner",
+                "type": "t_address"
+              },
+              {
+                "label": "data",
+                "type": "t_bytes_storage"
+              },
+              {
+                "label": "approved",
+                "type": "t_bool"
+              },
+              {
+                "label": "revoked",
+                "type": "t_bool"
+              },
+              {
+                "label": "sender",
+                "type": "t_address"
+              }
+            ]
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          }
+        }
+      }
+    },
+    "d997123746344fbf79eade1388d01554c2a96b5730b119ec763cbed3308c07cc": {
+      "address": "0xf2f4Bc146367408A2f8EEB435B2964bBe09A8d5c",
+      "txHash": "0x8c3d424e8025be31c337d416d3279088a51ed1fb6ae6e6f93924ee25666e9a53",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:26"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "ERC1967UpgradeUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:214"
+          },
+          {
+            "contract": "UUPSUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:80"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "issuer",
+            "type": "t_contract(Issuer)3761",
+            "src": "../project:/contracts/Migrations.sol:24"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "registry",
+            "type": "t_contract(Registry)5366",
+            "src": "../project:/contracts/Migrations.sol:24"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "_requestMigrateToPublicStorage",
+            "type": "t_mapping(t_uint256,t_struct(RequestStateChange)3816_storage)",
+            "src": "../project:/contracts/Migrations.sol:24"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "_requestPrivateTransferStorage",
+            "type": "t_mapping(t_uint256,t_struct(PrivateTransferRequest)3807_storage)",
+            "src": "../project:/contracts/Migrations.sol:24"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "_migrations",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "../project:/contracts/Migrations.sol:24"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "_commitments",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "src": "../project:/contracts/Migrations.sol:24"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "_requestMigrateToPublicNonce",
+            "type": "t_uint256",
+            "src": "../project:/contracts/Migrations.sol:24"
+          },
+          {
+            "contract": "PrivateIssuer",
+            "label": "_requestPrivateTransferNonce",
+            "type": "t_uint256",
+            "src": "../project:/contracts/Migrations.sol:24"
+          }
+        ],
+        "types": {
+          "t_contract(Issuer)3761": {
+            "label": "contract Issuer"
+          },
+          "t_contract(Registry)5366": {
+            "label": "contract Registry"
+          },
+          "t_mapping(t_uint256,t_struct(RequestStateChange)3816_storage)": {
+            "label": "mapping(uint256 => struct PrivateIssuer.RequestStateChange)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_struct(RequestStateChange)3816_storage": {
+            "label": "struct PrivateIssuer.RequestStateChange",
+            "members": [
+              {
+                "label": "owner",
+                "type": "t_address"
+              },
+              {
+                "label": "certificateId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "hash",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "approved",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_struct(PrivateTransferRequest)3807_storage)": {
+            "label": "mapping(uint256 => struct PrivateIssuer.PrivateTransferRequest)"
+          },
+          "t_struct(PrivateTransferRequest)3807_storage": {
+            "label": "struct PrivateIssuer.PrivateTransferRequest",
+            "members": [
+              {
+                "label": "owner",
+                "type": "t_address"
+              },
+              {
+                "label": "hash",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          }
+        }
+      }
+    }
+  }
+}
